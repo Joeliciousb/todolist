@@ -1,36 +1,67 @@
 import { ChangeEvent, useState } from "react";
-import { todoType } from "../types/types";
 import { AgGridReact } from "ag-grid-react";
 import { ColDef } from "ag-grid-community";
+import { CustomCellRendererProps } from "ag-grid-react";
+import { v4 as uuidv4 } from "uuid";
 
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-material.css";
 
+import { todoType } from "../types/types";
+
 const TodoList = () => {
-  const [todoObject, setTodoObject] = useState<todoType>({
+  const generateTodo = () => ({
+    id: uuidv4(),
     description: "",
-    priority: "high" || "medium" || "low",
     date: "",
+    priority: "High" || "Medium" || "Low",
   });
-  const [listOfTodos, setListOfTodos] = useState<Array<todoType>>([]);
 
-  const [columnDefs] = useState<ColDef[]>([
-    { field: "description" },
-    { field: "priority" },
-    { field: "date" },
-  ]);
+  const [todoObject, setTodoObject] = useState<todoType>(generateTodo());
+  const [listOfTodos, setListOfTodos] = useState<todoType[]>([]);
 
-  function handleInputChange(event: ChangeEvent<HTMLInputElement>) {
+  const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
     setTodoObject({ ...todoObject, [event.target.name]: event.target.value });
-  }
-  function handlePriorityChange(event: ChangeEvent<HTMLSelectElement>) {
-    setTodoObject({ ...todoObject, [event.target.name]: event.target.value });
-  }
+  };
 
-  function handleAddTodo() {
-    setListOfTodos([...listOfTodos, todoObject]);
-    setTodoObject({ description: "", priority: "", date: "" });
-  }
+  const handlePriorityChange = (event: ChangeEvent<HTMLSelectElement>) => {
+    setTodoObject({ ...todoObject, [event.target.name]: event.target.value });
+  };
+
+  const handleAddTodo = () => {
+    setListOfTodos([...listOfTodos, { ...todoObject, id: uuidv4() }]);
+    setTodoObject(generateTodo());
+  };
+
+  const handleDeleteRow = (id: string) => {
+    setListOfTodos(listOfTodos.filter((todo) => todo.id !== id));
+  };
+
+  const columnDefs: ColDef[] = [
+    { field: "description", filter: true, floatingFilter: true },
+    { field: "date", filter: true, floatingFilter: true },
+    {
+      field: "priority",
+      filter: true,
+      floatingFilter: true,
+      cellStyle: (params) =>
+        params.value === "High" ? { color: "red" } : { color: "black" },
+      comparator: (priority1: string, priority2: string) => {
+        const priorityOrder: { [key: string]: number } = {
+          High: 3,
+          Medium: 2,
+          Low: 1,
+        };
+        return priorityOrder[priority1] - priorityOrder[priority2];
+      },
+    },
+    {
+      field: "actions",
+      cellRenderer: (params: CustomCellRendererProps) => (
+        <button onClick={() => handleDeleteRow(params.data.id)}>Delete</button>
+      ),
+    },
+  ];
 
   return (
     <>
@@ -58,9 +89,9 @@ const TodoList = () => {
           />
           <p>* Priority</p>
           <select name="priority" id="priority" onChange={handlePriorityChange}>
-            <option value="high">high</option>
-            <option value="medium">medium</option>
-            <option value="low">low</option>
+            <option value="High">High</option>
+            <option value="Medium">Medium</option>
+            <option value="Low">Low</option>
           </select>
           <button
             disabled={todoObject.date === "" || todoObject.description === ""}
@@ -71,7 +102,11 @@ const TodoList = () => {
         </div>
       </fieldset>
       <div className="ag-theme-material" style={{ width: 700, height: 500 }}>
-        <AgGridReact rowData={listOfTodos} columnDefs={columnDefs} />
+        <AgGridReact
+          rowData={listOfTodos}
+          columnDefs={columnDefs}
+          animateRows={true}
+        />
       </div>
     </>
   );
