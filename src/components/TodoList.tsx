@@ -41,18 +41,16 @@ const TodoList = () => {
   };
 
   const handleDateChange = (date: Dayjs | null) => {
-    const dateString = date?.format();
-    const formattedDate = new Date(
-      dateString ? dateString : ""
-    ).toLocaleDateString("en-GB", { day: "numeric", month: "numeric" });
+    const dateString = date?.format("DD/MM");
+    const formattedDate = dateString ? dateString : "";
     setTodoObject({
       ...todoObject,
-      date: date ? formattedDate : "",
+      date: formattedDate,
     });
   };
 
   const handleAddTodo = () => {
-    setListOfTodos([...listOfTodos, { ...todoObject, id: uuidv4() }]);
+    setListOfTodos([...listOfTodos, { ...todoObject }]);
     setTodoObject(generateTodo());
   };
 
