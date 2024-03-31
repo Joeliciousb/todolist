@@ -16,6 +16,9 @@ import {
   TextField,
   Box,
   Stack,
+  AppBar,
+  Typography,
+  Toolbar,
 } from "@mui/material";
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
@@ -104,6 +107,11 @@ const TodoList = () => {
 
   return (
     <Box>
+      <AppBar position="static">
+        <Toolbar>
+          <Typography variant="h6">My Todos</Typography>
+        </Toolbar>
+      </AppBar>
       <Stack
         direction="row"
         spacing={2}
